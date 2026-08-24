@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>COMELEC Queue Display</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="{{ url_for('static', filename='favicon.png') }}"
+    >
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            min-height:100vh;
+            width:100vw;
+            overflow-x:hidden;
+            font-family:Arial, sans-serif;
+            background:linear-gradient(
+                135deg,
+                #001f3f,
+                #003366,
+                #00509e
+            );
+            color:white;
+        }
+
+        /* BACKGROUND */
+
+        .circle{
+            position:fixed;
+            border-radius:50%;
+            background:rgba(255,255,255,0.05);
+            z-index:0;
+        }
+
+        .circle1{
+            width:260px;
+            height:260px;
+            top:-120px;
+            left:-120px;
+        }
+
+        .circle2{
+            width:220px;
+            height:220px;
+            bottom:-100px;
+            right:-100px;
+        }
+
+        /* CONTAINER */
+
+        .container{
+            width:100vw;
+            min-height:100vh;
+            padding:15px 20px;
+            position:relative;
+            z-index:10;
+        }
+
+        /* TOP BAR */
+
+        .top-bar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:15px;
+        }
+
+        .brand{
+            display:flex;
+            align-items:center;
+            gap:15px;
+        }
+
+        .brand img{
+            width:60px;
+            height:60px;
+            object-fit:contain;
+        }
+
+        .brand-text h1{
+            font-size:30px;
+        }
+
+        .brand-text p{
+            font-size:14px;
+            opacity:0.8;
+        }
+
+        /* VOICE BUTTON */
+
+        .voice-button button{
+            padding:12px 20px;
+            border:none;
+            border-radius:12px;
+            background:#28a745;
+            color:white;
+            font-weight:bold;
+            font-size:15px;
+            cursor:pointer;
+            box-shadow:0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* GLASS CARD */
+
+        .glass-card{
+            background:rgba(255,255,255,0.12);
+            backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,0.15);
+            border-radius:24px;
+            padding:18px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.2);
+            margin-bottom:15px;
+        }
+
+        /* NOW SERVING */
+
+        .serving-container{
+            text-align:center;
+            padding:40px 20px;
+        }
+
+        .serving-title{
+            font-size:42px;
+            color:#00ff99;
+            font-weight:800;
+            letter-spacing:3px;
+            margin-bottom:15px;
+            text-shadow:
+                0 6px 18px rgba(0,0,0,0.3);
+        }
+
+        .serving-number{
+
+            font-size:220px;
+
+            font-weight:900;
+
+            line-height:1;
+
+            letter-spacing:5px;
+
+            text-shadow:
+                0 12px 25px rgba(0,0,0,0.45);
+        }
+
+        .counter{
+
+            margin-top:15px;
+
+            font-size:34px;
+
+            font-weight:700;
+
+            letter-spacing:1px;
+
+            color:#ffffff;
+
+            text-shadow:
+                0 4px 10px rgba(0,0,0,0.25);
+        }
+
+        /* BLINK ANIMATION */
+
+        .blink{
+
+            animation:
+                blinkAnimation 1s linear infinite;
+        }
+
+        @keyframes blinkAnimation{
+
+            0%{
+                opacity:1;
+                transform:scale(1);
+            }
+
+            50%{
+                opacity:0.2;
+                transform:scale(1.05);
+            }
+
+            100%{
+                opacity:1;
+                transform:scale(1);
+            }
+        }
+
+        /* NEXT */
+
+        .next-title{
+            text-align:center;
+            font-size:24px;
+            font-weight:bold;
+            margin-bottom:15px;
+        }
+
+        .queue-grid{
+            display:grid;
+            grid-template-columns:repeat(5, 1fr);
+            gap:10px;
+        }
+
+        .queue-card{
+            background:rgba(255,255,255,0.12);
+            border:1px solid rgba(255,255,255,0.15);
+            border-radius:14px;
+            padding:14px;
+            text-align:center;
+            font-size:24px;
+            font-weight:bold;
+            backdrop-filter:blur(8px);
+        }
+
+        /* FOOTER */
+
+        .footer{
+            text-align:center;
+            opacity:0.7;
+            font-size:12px;
+            margin-top:8px;
+        }
+
+        /* TABLET */
+
+        @media(max-width:1200px){
+
+            .queue-grid{
+                grid-template-columns:repeat(4, 1fr);
+            }
+
+            .serving-number{
+                font-size:150px;
+            }
+
+        }
+
+        /* MOBILE */
+
+        @media(max-width:768px){
+
+            .top-bar{
+                flex-direction:column;
+                gap:10px;
+                text-align:center;
+            }
+
+            .queue-grid{
+                grid-template-columns:repeat(2, 1fr);
+            }
+
+            .serving-number{
+                font-size:100px;
+            }
+
+            .queue-card{
+                font-size:18px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="circle circle1"></div>
+<div class="circle circle2"></div>
+
+<div class="container">
+
+    <!-- TOP -->
+
+    <div class="top-bar">
+
+        <div class="brand">
+
+            <img src="/static/logo.png">
+
+            <div class="brand-text">
+
+                <h1>COMELEC Queue Display</h1>
+
+                <p>Queue Management System</p>
+
+            </div>
+
+        </div>
+
+        <div class="voice-button">
+
+            <button
+                id="startButton"
+                onclick="enableAudio()"
+            >
+                ENABLE VOICE ANNOUNCEMENT
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- NOW SERVING -->
+
+    <div class="glass-card serving-container">
+
+        <div class="serving-title">
+            NOW SERVING
+        </div>
+
+        <div
+            class="serving-number"
+            id="serving-number"
+        >
+            ---
+        </div>
+
+        <div class="counter">
+            Proceed to Encoding/Biometric Capture
+        </div>
+
+    </div>
+
+    <!-- NEXT -->
+
+    <div class="glass-card">
+
+        <div class="next-title">
+            NEXT IN LINE
+        </div>
+
+        <div
+            class="queue-grid"
+            id="next-grid"
+        >
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+
+        COMELEC Queue Management System © 2026
+
+    </div>
+
+</div>
+
+<script>
+
+let audioEnabled = false;
+
+let lastQueueNumber = "---";
+
+let lastAnnouncement =
+    localStorage.getItem(
+        "lastAnnouncement"
+    ) || "";
+
+// ENABLE AUDIO
+function enableAudio(){
+
+    audioEnabled = true;
+
+    document.getElementById(
+        "startButton"
+    ).style.display = "none";
+
+    let unlockAudio =
+        new Audio(
+            "/static/sounds/dingdong.mp3"
+        );
+
+    unlockAudio.volume = 0;
+
+    unlockAudio.play();
+
+    let test =
+        new SpeechSynthesisUtterance(
+            "Voice announcement enabled"
+        );
+
+    speechSynthesis.speak(test);
+}
+
+// LOAD DATA
+async function loadQueue(){
+
+    try{
+
+        const response =
+            await fetch('/queue_data');
+
+        const data =
+            await response.json();
+
+        // CURRENT
+        let servingElement =
+            document.getElementById(
+                "serving-number"
+            );
+
+        servingElement.innerText =
+            data.current;
+
+        // BLINK WHEN CHANGED
+        if(
+            data.current !== lastQueueNumber &&
+            data.current !== "---"
+        ){
+
+            servingElement.classList.add(
+                "blink"
+            );
+
+            setTimeout(() => {
+
+                servingElement.classList.remove(
+                    "blink"
+                );
+
+            }, 5000);
+
+            lastQueueNumber =
+                data.current;
+        }
+
+        // NEXT
+        let nextGrid = document.getElementById("next-grid");
+        nextGrid.replaceChildren(
+            ...data.next.map(function(item){
+                let queueCard = document.createElement("div");
+                queueCard.className = "queue-card";
+                queueCard.textContent = item;
+                return queueCard;
+            })
+        );
+
+        // UNIQUE
+        let announcementKey =
+            data.current +
+            "_" +
+            data.recalled +
+            "_" +
+            data.reannounce;
+
+        // ANNOUNCEMENT
+        if(
+            audioEnabled &&
+            data.current &&
+            data.current !== "---" &&
+            announcementKey !== lastAnnouncement
+        ){
+
+            let dingdong =
+                new Audio(
+                    "/static/sounds/dingdong.mp3"
+                );
+
+            let message = "";
+
+            if(data.recalled){
+
+                message =
+                    "Recalling number " +
+                    data.current.replace("-", " ") +
+                    ", now serving";
+
+            }else{
+
+                message =
+                    "Number " +
+                    data.current.replace("-", " ") +
+                    ", now serving";
+            }
+
+            let announce1 =
+                new SpeechSynthesisUtterance(
+                    message
+                );
+
+            announce1.lang = "en-US";
+            announce1.rate = 0.9;
+
+            let announce2 =
+                new SpeechSynthesisUtterance(
+                    message
+                );
+
+            announce2.lang = "en-US";
+            announce2.rate = 0.9;
+
+            speechSynthesis.cancel();
+
+            dingdong.play().then(() => {
+
+                dingdong.onended = function(){
+
+                    speechSynthesis.speak(
+                        announce1
+                    );
+
+                    announce1.onend = function(){
+
+                        speechSynthesis.speak(
+                            announce2
+                        );
+
+                    };
+
+                };
+
+            });
+
+            lastAnnouncement =
+                announcementKey;
+
+            localStorage.setItem(
+                "lastAnnouncement",
+                announcementKey
+            );
+        }
+
+    }catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+loadQueue();
+
+setInterval(loadQueue, 3000);
+
+</script>
+
+</body>
+</html>

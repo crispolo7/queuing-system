@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>COMELEC Queue System</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- FAVICON -->
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="{{ url_for('static', filename='favicon.png') }}"
+    >
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:Arial, sans-serif;
+            min-height:100vh;
+            background:linear-gradient(
+                135deg,
+                #003366,
+                #00509e,
+                #007bff
+            );
+            overflow-x:hidden;
+        }
+
+        /* BACKGROUND EFFECT */
+
+        .circle{
+            position:absolute;
+            border-radius:50%;
+            background:rgba(255,255,255,0.08);
+            z-index:0;
+        }
+
+        .circle1{
+            width:300px;
+            height:300px;
+            top:-100px;
+            left:-100px;
+        }
+
+        .circle2{
+            width:250px;
+            height:250px;
+            bottom:-80px;
+            right:-80px;
+        }
+
+        .container{
+            width:95%;
+            max-width:1200px;
+            margin:auto;
+            position:relative;
+            z-index:10;
+            padding-bottom:40px;
+        }
+
+        /* HEADER */
+
+        .header{
+
+            display:flex;
+
+            justify-content:space-between;
+
+            align-items:center;
+
+            padding:30px 10px;
+
+            color:white;
+
+            gap:20px;
+        }
+
+        .header-left{
+
+            display:flex;
+
+            align-items:center;
+
+            gap:20px;
+        }
+
+        .header-text h1{
+
+            font-size:42px;
+
+            margin-bottom:8px;
+        }
+
+        .header-text p{
+
+            font-size:18px;
+
+            opacity:0.9;
+        }
+
+        .logo img{
+
+            width:100px;
+
+            height:100px;
+
+            object-fit:contain;
+        }
+
+        /* RIGHT BUTTONS */
+
+        .header-right{
+
+            display:flex;
+
+            gap:15px;
+        }
+
+        .header-right a{
+
+            text-decoration:none;
+        }
+
+        .nav-btn{
+
+            border:none;
+
+            border-radius:14px;
+
+            padding:14px 24px;
+
+            color:white;
+
+            font-size:16px;
+
+            font-weight:bold;
+
+            cursor:pointer;
+
+            transition:0.3s;
+
+            box-shadow:
+                0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover{
+
+            transform:translateY(-2px);
+        }
+
+        .admin-btn{
+
+            background:linear-gradient(
+                135deg,
+                #6f42c1,
+                #4b2a84
+            );
+        }
+
+        .display-btn{
+
+            background:linear-gradient(
+                135deg,
+                #17a2b8,
+                #0f6674
+            );
+        }
+
+        /* GLASS CARD */
+
+        .card{
+            background:rgba(255,255,255,0.15);
+            backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,0.2);
+            border-radius:25px;
+            padding:30px;
+            margin-bottom:25px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .title{
+            text-align:center;
+            margin-bottom:30px;
+            color:white;
+            font-size:32px;
+            font-weight:bold;
+        }
+
+        /* BUTTONS */
+
+        .button-grid{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:40px;
+            flex-wrap:wrap;
+        }
+
+        .button-grid a{
+            text-decoration:none;
+        }
+
+        .queue-btn{
+            border:none;
+            border-radius:25px;
+            padding:45px 25px;
+            color:white;
+            font-size:28px;
+            font-weight:bold;
+            cursor:pointer;
+            transition:0.3s;
+            width:320px;
+            box-shadow:0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .queue-btn:hover{
+            transform:translateY(-5px) scale(1.03);
+        }
+
+        .normal{
+            background:linear-gradient(
+                135deg,
+                #007bff,
+                #0056b3
+            );
+        }
+
+        .priority{
+            background:linear-gradient(
+                135deg,
+                #dc3545,
+                #a71d2a
+            );
+        }
+
+        /* TABLE */
+
+        .table-wrapper{
+            overflow-x:auto;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            border-radius:20px;
+            overflow:hidden;
+        }
+
+        table th{
+            background:#003366;
+            color:white;
+            padding:18px;
+            font-size:18px;
+        }
+
+        table td{
+            padding:18px;
+            text-align:center;
+            border-bottom:1px solid #eee;
+            font-size:18px;
+        }
+
+        table tr:hover{
+            background:#f8f9fa;
+        }
+
+        /* STATUS COLORS */
+
+        .waiting{
+            color:#ff9800;
+            font-weight:bold;
+        }
+
+        .serving{
+            color:#28a745;
+            font-weight:bold;
+        }
+
+        .done{
+            color:#777;
+            font-weight:bold;
+        }
+
+        .skipped{
+            color:#dc3545;
+            font-weight:bold;
+        }
+
+        /* BADGES */
+
+        .priority-badge{
+            background:#dc3545;
+            color:white;
+            padding:6px 14px;
+            border-radius:20px;
+            font-size:13px;
+            font-weight:bold;
+        }
+
+        .normal-badge{
+            background:#007bff;
+            color:white;
+            padding:6px 14px;
+            border-radius:20px;
+            font-size:13px;
+            font-weight:bold;
+        }
+
+        /* FOOTER */
+
+        .footer{
+            text-align:center;
+            color:white;
+            margin-top:20px;
+            opacity:0.8;
+            font-size:14px;
+        }
+
+        /* MOBILE */
+
+        @media(max-width:768px){
+
+            .header{
+
+                flex-direction:column;
+
+                text-align:center;
+            }
+
+            .header-left{
+
+                flex-direction:column;
+            }
+
+            .header-right{
+
+                width:100%;
+
+                justify-content:center;
+
+                flex-wrap:wrap;
+            }
+
+            .header-text h1{
+
+                font-size:28px;
+            }
+
+            .header-text p{
+                font-size:15px;
+            }
+
+            .queue-btn{
+                width:100%;
+                font-size:24px;
+                padding:35px 20px;
+            }
+
+            table th,
+            table td{
+                font-size:14px;
+                padding:12px;
+            }
+
+            .title{
+                font-size:26px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- BACKGROUND -->
+
+<div class="circle circle1"></div>
+<div class="circle circle2"></div>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <!-- LEFT -->
+
+        <div class="header-left">
+
+            <div class="logo">
+
+                <img src="/static/logo.png">
+
+            </div>
+
+            <div class="header-text">
+
+                <h1>COMMISSION ON ELECTIONS</h1>
+
+                <p>Queue Management System</p>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+
+        <div class="header-right">
+
+            <a
+                href="/admin"
+                target="_blank"
+            >
+
+                <button class="nav-btn admin-btn">
+
+                    ADMIN
+
+                </button>
+
+            </a>
+
+            <a
+                href="/display"
+                target="_blank"
+            >
+
+                <button class="nav-btn display-btn">
+
+                    DISPLAY
+
+                </button>
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- GET NUMBER -->
+
+    <div class="card">
+
+        <div class="title">
+            GET QUEUE NUMBER
+        </div>
+
+        <div class="button-grid">
+
+            <form method="post" action="/get_number">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="queue-btn normal">
+                    NORMAL QUEUE
+                </button>
+            </form>
+
+            <form method="post" action="/priority">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="queue-btn priority">
+                    PRIORITY QUEUE
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- QUEUE STATUS -->
+
+    <div class="card">
+
+        <div class="title">
+            QUEUE STATUS
+        </div>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <tr>
+                    <th>NUMBER</th>
+                    <th>TYPE</th>
+                    <th>STATUS</th>
+                </tr>
+
+                {% for q in queues %}
+
+                <tr>
+
+                    <td>
+                        <strong>{{ q.number }}</strong>
+                    </td>
+
+                    <td>
+
+                        {% if q.priority %}
+
+                            <span class="priority-badge">
+                                PRIORITY
+                            </span>
+
+                        {% else %}
+
+                            <span class="normal-badge">
+                                NORMAL
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if q.status == 'waiting' %}
+
+                            <span class="waiting">
+                                WAITING
+                            </span>
+
+                        {% elif q.status == 'serving' %}
+
+                            <span class="serving">
+                                NOW SERVING
+                            </span>
+
+                        {% elif q.status == 'skipped' %}
+
+                            <span class="skipped">
+                                SKIPPED
+                            </span>
+
+                        {% else %}
+
+                            <span class="done">
+                                DONE
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        COMELEC Queue Management System © 2026
+
+    </div>
+
+</div>
+
+<!-- AUTO REFRESH -->
+
+<script>
+
+    setTimeout(function(){
+
+        location.reload();
+
+    }, 5000);
+
+</script>
+
+</body>
+</html>

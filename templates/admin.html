@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>COMELEC Admin Panel</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- FAVICON -->
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="{{ url_for('static', filename='favicon.png') }}"
+    >
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:Arial, sans-serif;
+            min-height:100vh;
+            background:linear-gradient(
+                135deg,
+                #003366,
+                #00509e,
+                #007bff
+            );
+            overflow-x:hidden;
+        }
+
+        /* BACKGROUND */
+
+        .circle{
+            position:absolute;
+            border-radius:50%;
+            background:rgba(255,255,255,0.08);
+            z-index:0;
+        }
+
+        .circle1{
+            width:300px;
+            height:300px;
+            top:-100px;
+            left:-100px;
+        }
+
+        .circle2{
+            width:250px;
+            height:250px;
+            bottom:-80px;
+            right:-80px;
+        }
+
+        .container{
+            width:95%;
+            max-width:1450px;
+            margin:auto;
+            position:relative;
+            z-index:10;
+            padding-bottom:40px;
+        }
+
+        /* HEADER */
+
+        .header{
+            text-align:center;
+            color:white;
+            padding:35px 20px;
+        }
+
+        .logo img{
+            width:100px;
+            height:100px;
+            object-fit:contain;
+            margin-bottom:15px;
+        }
+
+        .header h1{
+            font-size:42px;
+            margin-bottom:10px;
+        }
+
+        .header p{
+            opacity:0.9;
+            font-size:18px;
+        }
+
+        /* GLASS CARD */
+
+        .card{
+            background:rgba(255,255,255,0.15);
+            backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,0.2);
+            border-radius:25px;
+            padding:30px;
+            margin-bottom:25px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .title{
+            text-align:center;
+            font-size:30px;
+            margin-bottom:25px;
+            color:white;
+            font-weight:bold;
+        }
+
+        /* NOW SERVING */
+
+        .serving-box{
+            text-align:center;
+            padding:40px;
+            border-radius:25px;
+            background:linear-gradient(
+                135deg,
+                rgba(255,255,255,0.2),
+                rgba(255,255,255,0.08)
+            );
+            border:1px solid rgba(255,255,255,0.2);
+        }
+
+        .serving-label{
+            color:#00ff99;
+            font-size:28px;
+            margin-bottom:15px;
+            font-weight:bold;
+        }
+
+        .serving-number{
+            color:white;
+            font-size:100px;
+            font-weight:bold;
+            text-shadow:0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* BUTTONS */
+
+        .button-grid{
+            display:grid;
+            grid-template-columns:repeat(4, 1fr);
+            gap:20px;
+        }
+
+        .action-btn{
+            width:100%;
+            padding:22px;
+            border:none;
+            border-radius:18px;
+            font-size:18px;
+            font-weight:bold;
+            cursor:pointer;
+            color:white;
+            transition:0.3s;
+            box-shadow:0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .action-btn:hover{
+            transform:translateY(-3px);
+        }
+
+        .next{
+            background:linear-gradient(
+                135deg,
+                #28a745,
+                #1f7a33
+            );
+        }
+
+        .skip{
+            background:linear-gradient(
+                135deg,
+                #dc3545,
+                #a71d2a
+            );
+        }
+
+        .announce{
+            background:linear-gradient(
+                135deg,
+                #17a2b8,
+                #0f6f7f
+            );
+        }
+
+        .reset{
+            background:linear-gradient(
+                135deg,
+                #343a40,
+                #1f2327
+            );
+        }
+
+        /* TABLE LAYOUT */
+
+        .queue-layout{
+            display:grid;
+            grid-template-columns:2fr 1fr;
+            gap:25px;
+        }
+
+        /* TABLES */
+
+        .table-wrapper{
+            overflow-x:auto;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            border-radius:20px;
+            overflow:hidden;
+        }
+
+        table th{
+            background:#003366;
+            color:white;
+            padding:18px;
+            font-size:17px;
+        }
+
+        table td{
+            padding:18px;
+            text-align:center;
+            border-bottom:1px solid #eee;
+            font-size:16px;
+        }
+
+        table tr:hover{
+            background:#f8f9fa;
+        }
+
+        /* TYPES */
+
+        .priority{
+            color:#dc3545;
+            font-weight:bold;
+        }
+
+        .normal{
+            color:#007bff;
+            font-weight:bold;
+        }
+
+        /* STATUS */
+
+        .waiting-status{
+            color:#ff9800;
+            font-weight:bold;
+        }
+
+        .serving-status{
+            color:#28a745;
+            font-weight:bold;
+        }
+
+        .skipped-status{
+            color:#dc3545;
+            font-weight:bold;
+        }
+
+        .done-status{
+            color:#777;
+            font-weight:bold;
+        }
+
+        /* RECALL BUTTON */
+
+        .recall-btn{
+            background:#ffc107;
+            color:black;
+            border:none;
+            padding:10px 15px;
+            border-radius:10px;
+            cursor:pointer;
+            font-weight:bold;
+            transition:0.3s;
+        }
+
+        .recall-btn:hover{
+            transform:scale(1.05);
+        }
+
+        /* MOBILE */
+
+        @media(max-width:1000px){
+
+            .queue-layout{
+                grid-template-columns:1fr;
+            }
+
+        }
+
+        @media(max-width:768px){
+
+            .button-grid{
+                grid-template-columns:1fr;
+            }
+
+            .serving-number{
+                font-size:65px;
+            }
+
+            .header h1{
+                font-size:30px;
+            }
+
+            .title{
+                font-size:24px;
+            }
+
+            table th,
+            table td{
+                font-size:14px;
+                padding:12px;
+            }
+
+        }
+		
+		.modal{
+			position:fixed;
+			top:0;
+			left:0;
+			width:100%;
+			height:100%;
+			background:rgba(0,0,0,0.55);
+			display:none;
+			justify-content:center;
+			align-items:center;
+			z-index:9999;
+			backdrop-filter:blur(6px);
+		}
+
+		.modal-content{
+			width:90%;
+			max-width:420px;
+			background:rgba(255,255,255,0.15);
+			backdrop-filter:blur(18px);
+			border:1px solid rgba(255,255,255,0.2);
+			border-radius:25px;
+			padding:35px 30px;
+			text-align:center;
+			color:white;
+			box-shadow:0 10px 35px rgba(0,0,0,0.3);
+			animation:popup 0.25s ease;
+		}
+
+		@keyframes popup{
+
+			from{
+				transform:scale(0.8);
+				opacity:0;
+			}
+
+			to{
+				transform:scale(1);
+				opacity:1;
+			}
+		}
+
+		.modal-content h2{
+			margin-bottom:15px;
+			font-size:28px;
+		}
+
+		.modal-content p{
+			font-size:17px;
+			opacity:0.9;
+			margin-bottom:30px;
+			line-height:1.5;
+		}
+
+		.modal-buttons{
+			display:flex;
+			gap:15px;
+		}
+
+		.modal-buttons button{
+			flex:1;
+			padding:15px;
+			border:none;
+			border-radius:15px;
+			font-size:16px;
+			font-weight:bold;
+			cursor:pointer;
+			transition:0.3s;
+		}
+
+		.modal-buttons button:hover{
+			transform:translateY(-2px);
+		}
+
+		.cancel-btn{
+			background:#6c757d;
+			color:white;
+		}
+
+		.confirm-btn{
+			background:#dc3545;
+			color:white;
+		}
+    </style>
+
+</head>
+
+<body>
+
+<!-- BACKGROUND -->
+
+<div class="circle circle1"></div>
+<div class="circle circle2"></div>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="logo">
+
+            <img src="/static/logo.png">
+
+        </div>
+
+        <h1>COMELEC ADMIN PANEL</h1>
+
+        <p>Queue Management Dashboard</p>
+
+    </div>
+
+    <!-- NOW SERVING -->
+
+    <div class="card">
+
+        <div class="serving-box">
+
+            <div class="serving-label">
+                NOW SERVING
+            </div>
+
+            {% if serving %}
+
+                <div class="serving-number">
+                    {{ serving[0].number }}
+                </div>
+
+            {% else %}
+
+                <div class="serving-number">
+                    ---
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- ACTION BUTTONS -->
+
+	<div class="card">
+
+		<div class="button-grid">
+
+			<form method="post" action="/next/Counter 1">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				<button type="submit" class="action-btn next">
+					NEXT
+				</button>
+			</form>
+
+			<form method="post" action="/skip">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				<button type="submit" class="action-btn skip">
+					SKIP
+				</button>
+			</form>
+
+			<form method="post" action="/reannounce">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				<button type="submit" class="action-btn announce">
+					RE-ANNOUNCE
+				</button>
+			</form>
+
+			<button
+				type="button"
+				class="action-btn reset"
+				onclick="openResetModal()"
+			>
+				RESET
+			</button>
+
+			<form method="post" action="/logout">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				<button type="submit" class="action-btn">LOG OUT</button>
+			</form>
+
+		</div>
+
+	</div>
+
+    <!-- TABLES -->
+
+    <div class="queue-layout">
+
+        <!-- WAITING QUEUE -->
+
+        <div class="card">
+
+            <div class="title">
+                WAITING QUEUE
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <tr>
+                        <th>NUMBER</th>
+                        <th>TYPE</th>
+                        <th>STATUS</th>
+                    </tr>
+
+                    {% for q in queues %}
+
+                        {% if q.status == 'waiting' or q.status == 'serving' %}
+
+                        <tr>
+
+                            <td>
+                                <strong>{{ q.number }}</strong>
+                            </td>
+
+                            <td>
+
+                                {% if q.priority %}
+
+                                    <span class="priority">
+                                        PRIORITY
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="normal">
+                                        NORMAL
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if q.status == 'waiting' %}
+
+                                    <span class="waiting-status">
+                                        WAITING
+                                    </span>
+
+                                {% elif q.status == 'serving' %}
+
+                                    <span class="serving-status">
+                                        NOW SERVING
+                                    </span>
+
+                                {% elif q.status == 'skipped' %}
+
+                                    <span class="skipped-status">
+                                        SKIPPED
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="done-status">
+                                        DONE
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- SKIPPED QUEUE -->
+
+        <div class="card">
+
+            <div class="title">
+                SKIPPED QUEUE
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <tr>
+                        <th>NUMBER</th>
+                        <th>ACTION</th>
+                    </tr>
+
+                    {% for q in queues %}
+
+                        {% if q.status == 'skipped' %}
+
+                        <tr>
+
+                            <td>
+                                <strong>{{ q.number }}</strong>
+                            </td>
+
+                            <td>
+
+                                <form method="post" action="/recall/{{ q.id }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="recall-btn">
+                                        RECALL
+                                    </button>
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+<!-- RESET MODAL -->
+
+	<div
+		class="modal"
+		id="resetModal"
+	>
+
+		<div class="modal-content">
+
+			<h2>Reset Queue?</h2>
+
+			<p>
+				This will permanently remove
+				all queue records.
+			</p>
+
+			<div class="modal-buttons">
+
+				<button
+					class="cancel-btn"
+					onclick="closeResetModal()"
+				>
+					Cancel
+				</button>
+
+				<button
+					class="confirm-btn"
+					onclick="confirmReset()"
+				>
+					Yes, Reset
+				</button>
+
+			</div>
+
+		</div>
+
+	</div>
+
+    <form id="resetForm" method="post" action="/reset">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    </form>
+
+</div>
+
+<!-- AUTO REFRESH -->
+
+<script>
+
+    let autoRefresh;
+
+    // START AUTO REFRESH
+    function startRefresh(){
+
+        autoRefresh = setTimeout(function(){
+
+            location.reload();
+
+        }, 5000);
+
+    }
+
+    startRefresh();
+
+    // OPEN MODAL
+    function openResetModal(){
+
+        // STOP REFRESH
+        clearTimeout(autoRefresh);
+
+        document.getElementById(
+            "resetModal"
+        ).style.display = "flex";
+    }
+
+    // CLOSE MODAL
+    function closeResetModal(){
+
+        document.getElementById(
+            "resetModal"
+        ).style.display = "none";
+
+        // START AGAIN
+        startRefresh();
+    }
+
+    // CONFIRM RESET
+    function confirmReset(){
+
+        document.getElementById("resetForm").submit();
+
+    }
+
+</script>
+</body>
+</html>
