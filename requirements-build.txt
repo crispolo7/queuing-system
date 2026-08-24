@@ -1,0 +1,5 @@
+# Runtime dependencies
+-r requirements.txt
+
+# Windows executable builder
+pyinstaller==6.22.2
