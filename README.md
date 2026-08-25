@@ -1,4 +1,4 @@
-# COMELEC Queue Management System
+#  Queuing Management System
 
 ## Secure local setup
 
@@ -27,6 +27,7 @@
    ```powershell
    python run_app.py
    ```
+5. You can Modify the the Logos and Names for this project in the static and templates. Initial logos and name are from comelec since this project is for initiative to help comelec client flow improvement.
 
 To build the Windows executable, install the additional build dependency and use the existing spec file:
 
